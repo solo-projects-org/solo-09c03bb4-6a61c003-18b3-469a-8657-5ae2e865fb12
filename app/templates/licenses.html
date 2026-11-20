@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}授权管理{% endblock %}
+{% block content %}
+<section>
+  <h2>授权管理</h2>
+  <p class="muted">撤回为终态操作：撤回后不可恢复，重传相同授权号的 CSV 也不会恢复。
+    撤回“使用中”的授权时，若存在同署名的有效商用授权，系统会自动换用；否则对应展图停供。</p>
+  {% if licenses %}
+  <table>
+    <tr><th>授权号</th><th>原图号</th><th>允许商用</th><th>署名</th><th>状态</th>
+        <th>使用中</th><th>批次</th><th>操作</th></tr>
+    {% for l in licenses %}
+    <tr>
+      <td><code>{{ l.license_no }}</code></td>
+      <td><code>{{ l.original_no }}</code></td>
+      <td>{{ "是" if l.commercial else "否" }}</td>
+      <td>{{ l.attribution }}</td>
+      <td>
+        {% if l.revoked %}<span class="bad">已撤回</span>{% if l.revoked_at %}<br>
+          <span class="muted">{{ l.revoked_at }}</span>{% endif %}
+        {% else %}<span class="ok">有效</span>{% endif %}
+      </td>
+      <td>{{ l.used_by or "—" }}</td>
+      <td class="muted">{{ l.batch_label }}</td>
+      <td>
+        {% if not l.revoked %}
+        <form class="inline" method="post" action="/licenses/{{ l.id }}/revoke"
+              onsubmit="return confirm('确定撤回授权 {{ l.license_no }}？撤回后不可恢复。');">
+          <button type="submit" class="danger">撤回</button>
+        </form>
+        {% else %}—{% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">尚未导入授权数据。</p>
+  {% endif %}
+</section>
+{% endblock %}

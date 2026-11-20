@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}展图授权清单管理{% endblock %}</title>
+<style>
+  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+         margin: 0; color: #222; background: #f6f7f9; }
+  nav { background: #1f3a5f; padding: 10px 20px; }
+  nav a { color: #fff; text-decoration: none; margin-right: 18px; font-weight: 600; }
+  main { max-width: 1080px; margin: 20px auto; padding: 0 16px; }
+  section, .card { background: #fff; border-radius: 8px; padding: 16px 20px;
+                   margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { border-bottom: 1px solid #e5e7eb; padding: 8px 10px; text-align: left;
+           font-size: 14px; vertical-align: top; }
+  th { background: #f0f2f5; }
+  .ok { color: #137333; font-weight: 600; }
+  .bad { color: #c5221f; font-weight: 600; }
+  .warn { color: #b06000; font-weight: 600; }
+  .flash-ok { background: #e6f4ea; border: 1px solid #a8dab5; padding: 10px 14px;
+              border-radius: 6px; margin-bottom: 14px; }
+  .flash-err { background: #fce8e6; border: 1px solid #f5b5ae; padding: 10px 14px;
+               border-radius: 6px; margin-bottom: 14px; }
+  button { background: #1f3a5f; color: #fff; border: 0; border-radius: 5px;
+           padding: 7px 14px; cursor: pointer; font-size: 14px; }
+  button.danger { background: #c5221f; }
+  input[type=text], input[type=file] { padding: 6px; margin: 4px 6px 4px 0; }
+  form.inline { display: inline; }
+  .muted { color: #666; font-size: 13px; }
+  code { background: #f0f2f5; padding: 1px 5px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<nav>
+  <a href="/">展图列表 / 导入</a>
+  <a href="/licenses">授权管理</a>
+</nav>
+<main>
+{% if msg %}<div class="flash-ok">{{ msg }}</div>{% endif %}
+{% if err %}<div class="flash-err">{{ err }}</div>{% endif %}
+{% block content %}{% endblock %}
+</main>
+</body>
+</html>

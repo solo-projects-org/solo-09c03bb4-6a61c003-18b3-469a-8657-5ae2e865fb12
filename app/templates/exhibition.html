@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}展图 {{ ex.exhibition_no }}{% endblock %}
+{% block content %}
+<section>
+  <h2>展图 {{ ex.exhibition_no }} — {{ ex.title }}</h2>
+  {% if st.downloadable %}
+    <p><span class="ok">✔ 可供下载</span>：每张原图均有有效商用授权且署名已确认。</p>
+    <p><a href="/exhibitions/{{ ex.id }}/manifest.csv"><button>下载清单 CSV（原图号 / 授权号 / 署名）</button></a></p>
+  {% else %}
+    <p><span class="bad">✖ 停供中</span></p>
+    {% if st.missing %}<p>缺有效商用授权的原图：<span class="bad">{{ st.missing|join("、") }}</span></p>{% endif %}
+    {% if st.unconfirmed %}<p>需要确认新署名的原图：<span class="warn">{{ st.unconfirmed|join("、") }}</span></p>{% endif %}
+    {% if not st['items'] %}<p class="muted">该展图尚未关联任何原图，请先导入对照 CSV。</p>{% endif %}
+  {% endif %}
+</section>
+
+{% if st['items'] %}
+<section>
+  <h3>当前清单</h3>
+  <table>
+    <tr><th>原图号</th><th>授权号</th><th>署名</th><th>状态</th><th>其他有效商用授权</th></tr>
+    {% for it in st['items'] %}
+    <tr>
+      <td><code>{{ it.original_no }}</code></td>
+      <td>{% if it.license_valid %}{{ it.license_no }}{% else %}<span class="bad">无有效授权</span>{% endif %}</td>
+      <td>{{ it.attribution }}</td>
+      <td>
+        {% if not it.license_valid %}<span class="bad">缺授权</span>
+        {% elif it.confirmed %}<span class="ok">署名已确认</span>
+        {% else %}<span class="warn">待确认署名</span>{% endif %}
+      </td>
+      <td class="muted">
+        {% for a in it.alternatives %}{{ a.license_no }}（{{ a.attribution }}）{% if not loop.last %}；{% endif %}
+        {% else %}无{% endfor %}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</section>
+
+<section>
+  <h3>编辑确认</h3>
+  {% if st.downloadable %}
+    <p class="muted">清单已确认，无需操作。若授权发生变化，系统会要求重新确认。</p>
+  {% else %}
+    <p class="muted">请核对上表中的授权号与署名。确认时系统会重新校验授权是否仍然有效；
+      若清单中的授权已被撤回，将维持停供并提示重新核对。</p>
+    <form method="post" action="/exhibitions/{{ ex.id }}/confirm">
+      {% for it in st['items'] %}
+        {% if it.license_valid %}
+        <input type="hidden" name="license_{{ it.original_id }}" value="{{ it.license_no }}">
+        <input type="hidden" name="attribution_{{ it.original_id }}" value="{{ it.attribution }}">
+        {% endif %}
+      {% endfor %}
+      <input type="text" name="editor" placeholder="编辑姓名" required>
+      <button type="submit">确认当前清单</button>
+    </form>
+  {% endif %}
+</section>
+
+{% if confirmations %}
+<section>
+  <h3>确认记录</h3>
+  <table>
+    <tr><th>时间</th><th>编辑</th><th>清单内容</th></tr>
+    {% for c in confirmations %}
+    <tr><td>{{ c.created_at }}</td><td>{{ c.editor }}</td><td class="muted">{{ c.detail }}</td></tr>
+    {% endfor %}
+  </table>
+</section>
+{% endif %}
+{% endif %}
+{% endblock %}

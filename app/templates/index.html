@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block content %}
+<section>
+  <h2>导入数据</h2>
+  <form method="post" action="/upload/mapping" enctype="multipart/form-data">
+    <div><b>展图-原图对照 CSV</b> <span class="muted">列：展图号, 展图名称, 原图号</span></div>
+    <input type="file" name="file" accept=".csv" required>
+    <button type="submit">导入对照</button>
+  </form>
+  <hr>
+  <form method="post" action="/upload/licenses" enctype="multipart/form-data">
+    <div><b>授权 CSV（可分批补录）</b> <span class="muted">列：授权号, 原图号, 是否允许商用, 署名</span></div>
+    <input type="file" name="file" accept=".csv" required>
+    <input type="text" name="batch" placeholder="批次备注（可选）">
+    <button type="submit">导入授权</button>
+  </form>
+  <p class="muted">说明：授权号唯一，重复导入会被跳过；已撤回的授权不会因重传而恢复。</p>
+</section>
+
+<section>
+  <h2>展图列表</h2>
+  {% if exhibitions %}
+  <table>
+    <tr><th>展图号</th><th>名称</th><th>原图数</th><th>状态</th><th>操作</th></tr>
+    {% for ex in exhibitions %}
+    <tr>
+      <td><code>{{ ex.exhibition_no }}</code></td>
+      <td>{{ ex.title }}</td>
+      <td>{{ ex.total }}</td>
+      <td>
+        {% if ex.downloadable %}
+          <span class="ok">可供下载</span>
+        {% else %}
+          <span class="bad">停供</span>
+          {% if ex.missing %}<br>缺授权：{{ ex.missing|join("、") }}{% endif %}
+          {% if ex.unconfirmed %}<br>待确认署名：{{ ex.unconfirmed|join("、") }}{% endif %}
+          {% if not ex.total %}<br><span class="muted">未导入对照</span>{% endif %}
+        {% endif %}
+      </td>
+      <td>
+        <a href="/exhibitions/{{ ex.id }}">详情</a>
+        {% if ex.downloadable %} · <a href="/exhibitions/{{ ex.id }}/manifest.csv">下载清单</a>{% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">尚未导入任何展图对照数据。</p>
+  {% endif %}
+</section>
+{% endblock %}
